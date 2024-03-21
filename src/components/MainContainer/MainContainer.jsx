@@ -53,7 +53,8 @@ export default function MainContainer() {
     return false;
   }
 
-  function handleConfirmMonthlyIncome() {
+  function handleConfirmMonthlyIncome(event) {
+    event.preventDefault()
     // Checks if the input is empty
     if (monthlyIncomeInputValue.trim() === '') {
       console.log(monthlyIncomeInputValue);
@@ -77,6 +78,7 @@ export default function MainContainer() {
 
   function handleEnterKeyPressMonthlyIncome(event) {
     if (event.key === 'Enter') {
+      event.preventDefault()
       // Perform your action here when Enter is pressed
       handleConfirmMonthlyIncome();
     }
@@ -109,32 +111,33 @@ export default function MainContainer() {
           </Flex>
           <Flex flexDirection="column" gap="0.5rem" alignSelf="center">
             <Flex gap="1rem">
-              <InputGroup alignSelf="center" size="lg">
-                <InputLeftElement pointerEvents="none" color="black" fontSize="1.2em">
-                  $
-                </InputLeftElement>
-                <Input
-                  focusBorderColor="black"
-                  placeholder="Enter amount"
-                  _placeholder={{ color: 'black' }}
-                  value={monthlyIncomeInputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleEnterKeyPressMonthlyIncome}
-                />
-              </InputGroup>
-              <Button
-                leftIcon={<FaCheck />}
-                bg="primaryRed"
-                variant="solid"
-                alignSelf="center"
-                size="lg"
-                color="white"
-                _hover={{ background: 'blackAlpha.500' }}
-                _active={{ background: 'blackAlpha.800' }}
-                onClick={handleConfirmMonthlyIncome}
-              >
-                {monthlyIncome !== '$0' ? 'Edit' : 'Confirm'}
-              </Button>
+              <form onSubmit={handleConfirmMonthlyIncome}>
+                <InputGroup alignSelf="center" size="lg">
+                  <InputLeftElement pointerEvents="none" color="black" fontSize="1.2em">
+                    $
+                  </InputLeftElement>
+                  <Input
+                    focusBorderColor="black"
+                    placeholder="Enter amount"
+                    _placeholder={{ color: 'black' }}
+                    value={monthlyIncomeInputValue}
+                    onChange={handleInputChange}
+                  />
+                </InputGroup>
+                <Button
+                  leftIcon={<FaCheck />}
+                  bg="primaryRed"
+                  variant="solid"
+                  alignSelf="center"
+                  size="lg"
+                  color="white"
+                  _hover={{ background: 'blackAlpha.500' }}
+                  _active={{ background: 'blackAlpha.800' }}
+                  type='submit'
+                >
+                  {monthlyIncome !== '$0' ? 'Edit' : 'Confirm'}
+                </Button>
+              </form>
             </Flex>
             {errorMessage ? (
               <Alert status="error">

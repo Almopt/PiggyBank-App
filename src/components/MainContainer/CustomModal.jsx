@@ -12,7 +12,7 @@ export default function CustomModal({ isOpen, onClose, title, bodyContent }) {
           <ModalBody>{bodyContent}</ModalBody>
 
           <ModalFooter>
-            <Button bg="primaryRed" color="white" mr={3} _hover={{ background: 'blackAlpha.600' }}>
+            <Button bg="primaryRed" color="white" onClick={onClose} mr={3} _hover={{ background: 'blackAlpha.600' }}>
               Cancel
             </Button>
             <Button variant="ghost">Reset</Button>
