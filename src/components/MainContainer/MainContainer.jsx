@@ -1,7 +1,28 @@
 import { useState } from 'react';
 
-import { Flex, Button, HStack, Text, InputLeftElement, InputGroup, Input, Alert, AlertIcon, useBreakpointValue, useDisclosure } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Button,
+  HStack,
+  Text,
+  InputLeftElement,
+  InputGroup,
+  Input,
+  Alert,
+  AlertIcon,
+  useBreakpointValue,
+  useDisclosure,
+  Heading,
+  Divider,
+  Select,
+  FormControl,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
+} from '@chakra-ui/react';
 import { FaCheck } from 'react-icons/fa';
+import { AddIcon } from '@chakra-ui/icons';
 import Stats from './Stats.jsx';
 import CustomModal from './CustomModal.jsx';
 
@@ -13,12 +34,19 @@ export default function MainContainer() {
   const [modalBodyContent, setModalBodyContent] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Create a new Date object
+  const currentDate = new Date();
+
+  // Get the current date in YYYY-MM-DD format
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Adding zero padding if needed
+  const day = String(currentDate.getDate()).padStart(2, '0'); // Adding zero padding if needed
+
   const customOnClose = () => {
     console.log('Custom onClose');
     console.trace();
     onClose();
   };
-  console.log(`Re-rendered: isOpen -> ${isOpen}`);
 
   // Dynamically get flex direction based on breakpoints
   const monthlyIncomeContainerflexDirection = useBreakpointValue({
@@ -32,6 +60,20 @@ export default function MainContainer() {
 
   // Dynamically get width based on breakpoints
   const monthlyIncomeContainerWidth = useBreakpointValue({ base: '100%', md: '100%', lg: '100%', xl: '50%', '2xl': '50%' });
+
+  const resetAndUpdateButtons = [
+    { label: 'Reset', colorScheme: 'orange', onClick: handleResetMonthlyIncome },
+    { label: 'Update', colorScheme: 'orange', onClick: handleUpdateMonthlyIncome },
+  ];
+
+  const expensesContainerFlexDirection = useBreakpointValue({
+    base: 'column',
+    sm: 'column',
+    md: 'column',
+    lg: 'row',
+    xl: 'row',
+    '2xl': 'row',
+  });
 
   const options = {
     style: 'decimal',
@@ -54,7 +96,7 @@ export default function MainContainer() {
   }
 
   function handleConfirmMonthlyIncome(event) {
-    event.preventDefault()
+    event.preventDefault();
     // Checks if the input is empty
     if (monthlyIncomeInputValue.trim() === '') {
       console.log(monthlyIncomeInputValue);
@@ -76,12 +118,17 @@ export default function MainContainer() {
     }
   }
 
-  function handleEnterKeyPressMonthlyIncome(event) {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      // Perform your action here when Enter is pressed
-      handleConfirmMonthlyIncome();
-    }
+  function handleResetMonthlyIncome() {
+    setMonthlyIncome(`$0`);
+    setMonthlyIncomeInputValue('');
+    onClose();
+  }
+
+  function handleUpdateMonthlyIncome() {
+    const newMontlhyIncome = parseInt(monthlyIncomeInputValue) + parseInt(monthlyIncome.substring(1));
+    setMonthlyIncome(`$${newMontlhyIncome.toLocaleString('en-US', options)}`);
+    setMonthlyIncomeInputValue('');
+    onClose();
   }
 
   return (
@@ -89,14 +136,20 @@ export default function MainContainer() {
     <Flex bg="#f1f3f4" grow="1" flexDirection="column">
       {/* Main Container */}
       <Flex mt="2.5rem" mx="4rem" flexDirection="column">
-        {isOpen === true ? <p>Modal is going to open</p> : <p>modal is not going to open</p>}
-        <CustomModal isOpen={isOpen} onClose={customOnClose} title={modalTitle} bodyContent={modalBodyContent} />
+        <CustomModal
+          isOpen={isOpen}
+          onClose={customOnClose}
+          title={modalTitle}
+          bodyContent={modalBodyContent}
+          buttons={resetAndUpdateButtons}
+          buttonsHandles={handleResetMonthlyIncome}
+        />
         {/* Monthly Income Container */}
         <Flex
           gap="1rem"
           bg="white"
           p="1rem"
-          border="1px"
+          // border="1px"
           borderRadius="0.6rem"
           width={monthlyIncomeContainerWidth}
           justifyContent="space-between"
@@ -110,19 +163,13 @@ export default function MainContainer() {
             </Text>
           </Flex>
           <Flex flexDirection="column" gap="0.5rem" alignSelf="center">
-            <Flex gap="1rem">
-              <form onSubmit={handleConfirmMonthlyIncome}>
+            <form onSubmit={handleConfirmMonthlyIncome}>
+              <Flex gap="1rem">
                 <InputGroup alignSelf="center" size="lg">
                   <InputLeftElement pointerEvents="none" color="black" fontSize="1.2em">
                     $
                   </InputLeftElement>
-                  <Input
-                    focusBorderColor="black"
-                    placeholder="Enter amount"
-                    _placeholder={{ color: 'black' }}
-                    value={monthlyIncomeInputValue}
-                    onChange={handleInputChange}
-                  />
+                  <Input focusBorderColor="black" placeholder="Enter amount" _placeholder={{ color: 'black' }} value={monthlyIncomeInputValue} onChange={handleInputChange} />
                 </InputGroup>
                 <Button
                   leftIcon={<FaCheck />}
@@ -133,12 +180,12 @@ export default function MainContainer() {
                   color="white"
                   _hover={{ background: 'blackAlpha.500' }}
                   _active={{ background: 'blackAlpha.800' }}
-                  type='submit'
+                  type="submit"
                 >
                   {monthlyIncome !== '$0' ? 'Edit' : 'Confirm'}
                 </Button>
-              </form>
-            </Flex>
+              </Flex>
+            </form>
             {errorMessage ? (
               <Alert status="error">
                 <AlertIcon />
@@ -155,6 +202,80 @@ export default function MainContainer() {
           <Stats title="Current Month Expenses" amount="$0" percentage="0%" />
           <Stats title="(%) Montlhy Expenses" amount="0%" percentage="0%" />
         </HStack>
+        {/* Expenses Container */}
+        <Flex flexDirection={expensesContainerFlexDirection} gap="2rem">
+          {/* Check Expenses Container */}
+          <Flex mt="2.5rem" gap="1rem" bg="white" p="1rem" borderRadius="0.6rem" justifyContent="space-between" boxShadow="base" flexDirection="column" width="60%">
+            {/* Title */}
+            <Flex justifyContent="space-between">
+              <Heading as="h2" size="lg" alignSelf="center">
+                Expenses
+              </Heading>
+              <Box>
+                <Select variant="filled" value="option1">
+                  <option value="option1">01/2024</option>
+                  <option value="option2">02/2024</option>
+                  <option value="option3">03/2024</option>
+                </Select>
+              </Box>
+            </Flex>
+            <Divider size="2xl" />
+            {/* Expenses */}
+          </Flex>
+          {/* Add/Update Expenses Container */}
+          <Flex mt="2.5rem" gap="1rem" bg="white" p="1rem" borderRadius="0.6rem" justifyContent="space-between" boxShadow="base" flexDirection="column" width="40%">
+            {/* Title */}
+            <Flex flexDirection="column" gap="0.5rem">
+              <Heading as="h2" size="lg">
+                Add Expense
+              </Heading>
+              <Text color="blackAlpha.600">Enter the details of your expensive to help you track your spending</Text>
+            </Flex>
+            <Divider size="2xl" />
+            {/* Expenses */}
+            <FormControl>
+              <Flex flexDirection="column" gap="1rem">
+                <Box>
+                  <FormLabel>Amount</FormLabel>
+                  <NumberInput min={1}>
+                    <NumberInputField />
+                  </NumberInput>
+                </Box>
+                <Box>
+                  <FormLabel>Description</FormLabel>
+                  <Input type="text" placeholder="Enter a detail description" />
+                </Box>
+                <Box>
+                  <FormLabel>Category</FormLabel>
+                  <Select value="groceries">
+                    <option value="groceries">Groceries</option>
+                    <option value="house-bills">House Bills</option>
+                    <option value="car-insurance">Car Insurance</option>
+                    <option value="investments">Investments</option>
+                  </Select>
+                </Box>
+                <Box>
+                  <FormLabel>Date</FormLabel>
+                  <Input type="date" value={`${year}-${month}-${day}`} />
+                </Box>
+                <Button
+                  mt="2rem"
+                  leftIcon={<AddIcon />}
+                  bg="primaryRed"
+                  variant="solid"
+                  alignSelf="center"
+                  size="lg"
+                  width="100%"
+                  color="white"
+                  _hover={{ background: 'blackAlpha.500' }}
+                  _active={{ background: 'blackAlpha.800' }}
+                >
+                  Add Expense
+                </Button>
+              </Flex>
+            </FormControl>
+          </Flex>
+        </Flex>
       </Flex>
     </Flex>
   );
