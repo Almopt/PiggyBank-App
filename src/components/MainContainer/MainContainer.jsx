@@ -6,11 +6,7 @@ import {
   Button,
   HStack,
   Text,
-  InputLeftElement,
-  InputGroup,
   Input,
-  Alert,
-  AlertIcon,
   useBreakpointValue,
   useDisclosure,
   Heading,
@@ -21,13 +17,15 @@ import {
   NumberInput,
   NumberInputField,
 } from '@chakra-ui/react';
-import { FaCheck } from 'react-icons/fa';
+// import { FaCheck } from 'react-icons/fa';
 import { AddIcon } from '@chakra-ui/icons';
 import Stats from './Stats.jsx';
 import CustomModal from './CustomModal.jsx';
+import Expense from './Expense.jsx';
+import MonthlyIncomeForm from './MonthlyIncomeForm.jsx';
 
 export default function MainContainer() {
-  const [monthlyIncomeInputValue, setMonthlyIncomeInputValue] = useState('');
+  // const [amount, setamount] = useState('');
   const [monthlyIncome, setMonthlyIncome] = useState('$0');
   const [errorMessage, setErrorMessage] = useState('');
   const [modalTitle, setModalTitle] = useState('');
@@ -36,6 +34,9 @@ export default function MainContainer() {
 
   // Create a new Date object
   const currentDate = new Date();
+
+  console.log('Entou a dar render');
+  console.log(monthlyIncome);
 
   // Get the current date in YYYY-MM-DD format
   const year = currentDate.getFullYear();
@@ -70,7 +71,7 @@ export default function MainContainer() {
     base: 'column',
     sm: 'column',
     md: 'column',
-    lg: 'row',
+    lg: 'column',
     xl: 'row',
     '2xl': 'row',
   });
@@ -80,9 +81,9 @@ export default function MainContainer() {
     useGrouping: true, // Enables thousands separator
   };
 
-  const handleInputChange = (event) => {
-    setMonthlyIncomeInputValue(event.target.value);
-  };
+  // const handleInputChange = (event) => {
+  //   setamount(event.target.value);
+  // };
 
   function isMonthlyInputFilled() {
     if (parseInt(monthlyIncome.substring(1)) > 0) {
@@ -95,17 +96,16 @@ export default function MainContainer() {
     return false;
   }
 
-  function handleConfirmMonthlyIncome(event) {
-    event.preventDefault();
+  function handleConfirmMonthlyIncome(amount) {
+    // event.preventDefault();
     // Checks if the input is empty
-    if (monthlyIncomeInputValue.trim() === '') {
-      console.log(monthlyIncomeInputValue);
+    if (amount.trim() === '') {
       setErrorMessage('Input cannot be empty');
 
       // Checks if input isn't a number
-    } else if (isNaN(monthlyIncomeInputValue)) {
+    } else if (isNaN(amount)) {
       setErrorMessage('Input must be a number');
-      setMonthlyIncomeInputValue('');
+      // setamount('');
     } else {
       // Checks if we already have a current Montlhy Income
       if (isMonthlyInputFilled()) {
@@ -113,21 +113,21 @@ export default function MainContainer() {
       }
       // Clear any previous error message if input is valid
       setErrorMessage('');
-      setMonthlyIncome(`$${parseInt(monthlyIncomeInputValue).toLocaleString('en-US', options)}`);
-      setMonthlyIncomeInputValue('');
+      setMonthlyIncome(`$${parseInt(amount).toLocaleString('en-US', options)}`);
+      // setamount('');
     }
   }
 
   function handleResetMonthlyIncome() {
     setMonthlyIncome(`$0`);
-    setMonthlyIncomeInputValue('');
+    // setamount('');
     onClose();
   }
 
-  function handleUpdateMonthlyIncome() {
-    const newMontlhyIncome = parseInt(monthlyIncomeInputValue) + parseInt(monthlyIncome.substring(1));
+  function handleUpdateMonthlyIncome(amount) {
+    const newMontlhyIncome = parseInt(amount) + parseInt(monthlyIncome.substring(1));
     setMonthlyIncome(`$${newMontlhyIncome.toLocaleString('en-US', options)}`);
-    setMonthlyIncomeInputValue('');
+    // setamount('');
     onClose();
   }
 
@@ -162,14 +162,22 @@ export default function MainContainer() {
               {monthlyIncome}
             </Text>
           </Flex>
-          <Flex flexDirection="column" gap="0.5rem" alignSelf="center">
+          <MonthlyIncomeForm income={monthlyIncome} onConfirmIncome={handleConfirmMonthlyIncome} errorMessage={errorMessage} />
+          {/* <Flex flexDirection="column" gap="0.5rem" alignSelf="center">
             <form onSubmit={handleConfirmMonthlyIncome}>
               <Flex gap="1rem">
                 <InputGroup alignSelf="center" size="lg">
                   <InputLeftElement pointerEvents="none" color="black" fontSize="1.2em">
                     $
                   </InputLeftElement>
-                  <Input focusBorderColor="black" placeholder="Enter amount" _placeholder={{ color: 'black' }} value={monthlyIncomeInputValue} onChange={handleInputChange} />
+                  <Input
+                    variant="filled"
+                    focusBorderColor="black"
+                    placeholder="Enter amount"
+                    _placeholder={{ color: 'black' }}
+                    value={amount}
+                    onChange={handleInputChange}
+                  />
                 </InputGroup>
                 <Button
                   leftIcon={<FaCheck />}
@@ -192,7 +200,7 @@ export default function MainContainer() {
                 {errorMessage}
               </Alert>
             ) : null}
-          </Flex>
+          </Flex> */}
         </Flex>
         {/* Stats Container */}
         <HStack spacing="2rem" mt="2.5rem" flexWrap="wrap">
@@ -205,14 +213,14 @@ export default function MainContainer() {
         {/* Expenses Container */}
         <Flex flexDirection={expensesContainerFlexDirection} gap="2rem">
           {/* Check Expenses Container */}
-          <Flex mt="2.5rem" gap="1rem" bg="white" p="1rem" borderRadius="0.6rem" justifyContent="space-between" boxShadow="base" flexDirection="column" width="60%">
+          <Flex mt="2.5rem" gap="1rem" bg="white" p="1rem" borderRadius="0.6rem" boxShadow="base" flexDirection="column" width="60%">
             {/* Title */}
             <Flex justifyContent="space-between">
               <Heading as="h2" size="lg" alignSelf="center">
                 Expenses
               </Heading>
               <Box>
-                <Select variant="filled" value="option1">
+                <Select variant="filled">
                   <option value="option1">01/2024</option>
                   <option value="option2">02/2024</option>
                   <option value="option3">03/2024</option>
@@ -221,6 +229,7 @@ export default function MainContainer() {
             </Flex>
             <Divider size="2xl" />
             {/* Expenses */}
+            <Expense></Expense>
           </Flex>
           {/* Add/Update Expenses Container */}
           <Flex mt="2.5rem" gap="1rem" bg="white" p="1rem" borderRadius="0.6rem" justifyContent="space-between" boxShadow="base" flexDirection="column" width="40%">
@@ -237,17 +246,17 @@ export default function MainContainer() {
               <Flex flexDirection="column" gap="1rem">
                 <Box>
                   <FormLabel>Amount</FormLabel>
-                  <NumberInput min={1}>
-                    <NumberInputField />
+                  <NumberInput min={1} variant="filled">
+                    <NumberInputField placeholder="Enter the amount " />
                   </NumberInput>
                 </Box>
                 <Box>
                   <FormLabel>Description</FormLabel>
-                  <Input type="text" placeholder="Enter a detail description" />
+                  <Input variant="filled" type="text" placeholder="Enter a detail description" />
                 </Box>
                 <Box>
                   <FormLabel>Category</FormLabel>
-                  <Select value="groceries">
+                  <Select variant="filled" placeholder="Select a Category">
                     <option value="groceries">Groceries</option>
                     <option value="house-bills">House Bills</option>
                     <option value="car-insurance">Car Insurance</option>
@@ -256,7 +265,8 @@ export default function MainContainer() {
                 </Box>
                 <Box>
                   <FormLabel>Date</FormLabel>
-                  <Input type="date" value={`${year}-${month}-${day}`} />
+                  {/* <Input variant="filled" type="date" value={`${year}-${month}-${day}`} /> */}
+                  <Input variant="filled" type="date" />
                 </Box>
                 <Button
                   mt="2rem"

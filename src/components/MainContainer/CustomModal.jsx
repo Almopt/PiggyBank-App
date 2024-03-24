@@ -1,7 +1,6 @@
 import { Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@chakra-ui/react';
 
 export default function CustomModal({ isOpen, onClose, title, bodyContent, buttons }) {
-  console.log('CustomModal -> isOpen', isOpen);
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
