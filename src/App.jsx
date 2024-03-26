@@ -1,12 +1,16 @@
 import './App.css';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
 import MainContainer from './components/MainContainer/MainContainer.jsx';
-import { Flex } from '@chakra-ui/react';
+import { Flex, useBreakpointValue } from '@chakra-ui/react';
 
 function App() {
+  // Conditionally render Sidebar based on screen size
+  const isSidebarVisible = useBreakpointValue({ base: false, lg: true });
+
   return (
-    <Flex h="calc(100vh)">
-      <Sidebar />
+    //h="calc(100vh)"
+    <Flex h="100vh">
+      {isSidebarVisible && <Sidebar />}
       <MainContainer />
     </Flex>
   );

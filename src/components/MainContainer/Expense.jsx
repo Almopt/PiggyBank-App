@@ -3,7 +3,12 @@ import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 
 import { TbPigMoney } from 'react-icons/tb';
 
-export default function Expense() {
+export default function Expense({ id, description, category, date, expenseAmount, handleButtons }) {
+  // Convert the string to a Date object
+  const dateObject = new Date(date);
+  // Format date into DD/MM/YYYY
+  const formatedDate = ('0' + dateObject.getDate()).slice(-2) + '/' + ('0' + (dateObject.getMonth() + 1)).slice(-2) + '/' + dateObject.getFullYear();
+
   return (
     // Expense Main Container
     <Box borderRadius="0.5rem" boxShadow="md" bg="#f1f3f4">
@@ -15,24 +20,35 @@ export default function Expense() {
           <Box></Box>
           {/* Expense Details */}
           <Flex flexDirection="column">
-            <Text>Expense Description</Text>
+            {/* Description */}
+            <Flex gap="0.5rem">
+              <Text as="b">Description:</Text>
+              <Text>{description}</Text>
+            </Flex>
             <Flex gap="0.8rem">
-              <Text>Category</Text>
-              <Text>Date</Text>
+              {/* Category */}
+              <Flex gap="0.5rem">
+                <Text as="b">Category:</Text>
+                <Text>{category}</Text>
+              </Flex>
+              <Flex gap="0.5rem">
+                <Text as="b">Date:</Text>
+                <Text>{formatedDate}</Text>
+              </Flex>
             </Flex>
           </Flex>
         </Flex>
         {/* Expense Amount and Action Button/Icons */}
         <Flex justifyContent="space-between" alignItems="center" gap="1rem">
           <Text fontSize="xl" as="b">
-            $200
+            {`$${expenseAmount}`}
           </Text>
           <Flex gap="0.5rem">
             <Tooltip label="Edit Expense" fontSize="md">
-              <EditIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} />
+              <EditIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => handleButtons[0](id)} />
             </Tooltip>
             <Tooltip label="Delete Expense" fontSize="md">
-              <DeleteIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} />
+              <DeleteIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => handleButtons[1](id)} />
             </Tooltip>
           </Flex>
         </Flex>

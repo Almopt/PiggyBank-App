@@ -12,7 +12,13 @@ export default function MonthlyIncomeForm({ income, onConfirmIncome, errorMessag
 
   return (
     <Flex flexDirection="column" gap="0.5rem" alignSelf="center">
-      <form onSubmit={() => onConfirmIncome(incomeInputValue)}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onConfirmIncome(incomeInputValue);
+          setincomeInputValue('');
+        }}
+      >
         <Flex gap="1rem">
           <InputGroup alignSelf="center" size="lg">
             <InputLeftElement pointerEvents="none" color="black" fontSize="1.2em">

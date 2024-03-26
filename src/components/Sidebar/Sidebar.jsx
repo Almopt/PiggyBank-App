@@ -11,7 +11,7 @@ export default function Sidebar() {
   }
 
   return (
-    <Stack bg="primaryRed" height="100%" justifyContent="space-between" minW="15rem">
+    <Stack bg="primaryRed" justifyContent="space-between" minW="15rem" flex="1">
       <Flex spacing="1rem" flexDirection="column">
         <Flex spacing={0} mt="3rem" px="1.5rem" cursor="pointer">
           <img src={logoImg} alt="Piggy Bank Logo" width={80} />
