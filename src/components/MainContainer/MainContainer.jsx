@@ -53,7 +53,7 @@ export default function MainContainer() {
   });
   const [monthsOfExpenses, setMonthsOfExpenses] = useState([]);
   const [selectedMonthsOfExpensesValue, setSelectedMonthsOfExpensesValue] = useState(undefined);
-
+  const [isEditing, setIsEditing] = useState(false);
   const expenseButtons = [handleEditExpense, handleDeleteExpense];
 
   // Create a new Date object
@@ -121,15 +121,25 @@ export default function MainContainer() {
     currency: 'USD',
   };
 
-  function setMonthsOfExpensesAux(date) {
+  function convertDate(date) {
     let specificDate = new Date(date); // Specific date and time
     const specificDateYear = specificDate.getFullYear();
     const specificDateMonth = String(specificDate.getMonth() + 1).padStart(2, '0'); // Adding zero padding if needed
 
-    const newMonthFormated = `${specificDateMonth}/${specificDateYear}`;
+    return `${specificDateMonth}/${specificDateYear}`;
+  }
 
-    if (!monthsOfExpenses.some((expense) => expense.monthFormated === newMonthFormated)) {
-      setMonthsOfExpenses((prevArray) => [...prevArray, { date: specificDate, monthFormated: newMonthFormated }]);
+  function setMonthsOfExpensesAux(date) {
+    // let specificDate = new Date(date); // Specific date and time
+    // const specificDateYear = specificDate.getFullYear();
+    // const specificDateMonth = String(specificDate.getMonth() + 1).padStart(2, '0'); // Adding zero padding if needed
+
+    // const newMonthFormated = `${specificDateMonth}/${specificDateYear}`;
+
+    const newMonthFormated = convertDate(date);
+
+    if (!monthsOfExpenses.some((expense) => expense === newMonthFormated)) {
+      setMonthsOfExpenses((prevArray) => [...prevArray, newMonthFormated]);
     }
   }
 
@@ -225,28 +235,35 @@ export default function MainContainer() {
         setInvalidExpense((prevValue) => !prevValue);
       }
       setExpensesArray((prevArray) => [...prevArray, { ...expenseFormData, id: ++counter }]);
-      resetExpenseFormData();
       updateStats(expenseFormData.expenseAmount, ADD_OPERATION, expenseFormData.date);
       setMonthsOfExpensesAux(expenseFormData.date);
+      setSelectedMonthsOfExpensesValue(convertDate(expenseFormData.date));
+      resetExpenseFormData();
+      if (isEditing) {
+        setIsEditing((prevState) => !prevState);
+      }
     }
   }
 
   function handleEditExpense(expenseId) {
-    for (const expense of expensesArray) {
-      if (expense.id === expenseId) {
-        setExpenseFormData({
-          expenseAmount: expense.expenseAmount,
-          description: expense.description,
-          category: expense.category,
-          date: expense.date,
-        });
+    if (!isEditing) {
+      for (const expense of expensesArray) {
+        if (expense.id === expenseId) {
+          setExpenseFormData({
+            expenseAmount: expense.expenseAmount,
+            description: expense.description,
+            category: expense.category,
+            date: expense.date,
+          });
 
-        updateStats(expense.expenseAmount, EDIT_DELETE_OPERATION, expense.date);
+          updateStats(expense.expenseAmount, EDIT_DELETE_OPERATION, expense.date);
 
-        setExpensesArray((prevExpensesArray) => {
-          prevExpensesArray.pop();
-          return prevExpensesArray;
-        });
+          setExpensesArray((prevExpensesArray) => {
+            return prevExpensesArray.filter((expense) => expense.id !== expenseId);
+          });
+
+          setIsEditing((prevState) => !prevState);
+        }
       }
     }
   }
@@ -266,43 +283,81 @@ export default function MainContainer() {
   function deleteExpense(id) {
     for (const expense of expensesArray) {
       if (expense.id === id) {
-        updateStats(expense.expenseAmount, EDIT_DELETE_OPERATION);
+        updateStats(expense.expenseAmount, EDIT_DELETE_OPERATION, expense.date);
         setExpensesArray((prevExpensesArray) => {
           return prevExpensesArray.filter((item) => item !== expense);
         });
+        break;
       }
     }
     onClose();
   }
 
   function updateStats(amount, operation, date) {
-    // // Get current date
-    // const currentDate = new Date();
-    // const currentMonth = currentDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based index
-    // const currentYear = currentDate.getFullYear();
-
     // Get expense Date
     const expenseDate = new Date(date);
+    let selectedMonth = new Date(expenseDate);
+
+    if (selectedMonthsOfExpensesValue !== undefined) {
+      const [month, year] = selectedMonthsOfExpensesValue.split('/');
+      selectedMonth = new Date(parseInt(year), parseInt(month) - 1);
+    }
+
+    console.log(expenseDate);
+    console.log(selectedMonth);
 
     if (operation === ADD_OPERATION) {
       // Check if the expense's date has the same month and year as the current month and year
-      if (expenseDate.getMonth() + 1 === currentMonth && expenseDate.getFullYear() === currentYear) {
+      if (expenseDate.getMonth() + 1 === selectedMonth.getMonth() + 1 && expenseDate.getFullYear() === selectedMonth.getFullYear()) {
         setCurrentMonthBalance((prevAmount) => {
           const currentMonthlyBalanceAfterCalculations = +prevAmount.substring(1).replace(/[^0-9.-]+/g, '') - Number(amount);
+          console.log(currentMonthlyBalanceAfterCalculations);
           updatePercentageMonthlyExpenses(currentMonthlyBalanceAfterCalculations);
-          return `$${(+prevAmount.substring(1).replace(/[^0-9.-]+/g, '') - Number(amount)).toLocaleString('en-US', options)}`;
+          // return `$${(+prevAmount.substring(1).replace(/[^0-9.-]+/g, '') - Number(amount)).toLocaleString('en-US', options)}`;
+          return `$${currentMonthlyBalanceAfterCalculations}`;
         });
 
         setCurrentMonthExpenses((prevAmount) => {
           return `$${(+prevAmount.substring(1).replace(/[^0-9.-]+/g, '') + Number(amount)).toLocaleString('en-US', options)}`;
         });
+      } else {
+        const filteredExpensesArray = getFilteredExpensesByDate(expenseDate);
+        console.log(filteredExpensesArray.length);
+
+        if (filteredExpensesArray.length > 0) {
+          // Calculate the total expenseAmount by summing the expenseAmount property of all objects in the array
+          let totalExpenseAmount = filteredExpensesArray.reduce((total, obj) => {
+            return total + +obj.expenseAmount;
+          }, 0);
+
+          totalExpenseAmount += +amount; // add the new expense amount
+
+          const currentMonthlyBalanceAfterCalculations = +monthlyIncome.substring(1).replace(/[^0-9.-]+/g, '') - totalExpenseAmount.toLocaleString('en-US', options);
+
+          // Update Current Month Balance
+          setCurrentMonthBalance(`$${+monthlyIncome.substring(1).replace(/[^0-9.-]+/g, '') - totalExpenseAmount.toLocaleString('en-US', options)}`);
+          // Update Current Month Expenses
+          setCurrentMonthExpenses(`$${totalExpenseAmount.toLocaleString('en-US', options)}`);
+          // Update Percentage Montlhy Expenses
+          updatePercentageMonthlyExpenses(currentMonthlyBalanceAfterCalculations);
+        } else {
+          const currentMonthlyBalanceAfterCalculations = +monthlyIncome.substring(1).replace(/[^0-9.-]+/g, '') - Number(amount);
+
+          // Update Current Month Balance
+          setCurrentMonthBalance(`$${+monthlyIncome.substring(1).replace(/[^0-9.-]+/g, '') - Number(amount)}`);
+          // Update Current Month Expenses
+          setCurrentMonthExpenses(`$${Number(amount).toLocaleString('en-US', options)}`);
+          // Update Percentage Montlhy Expenses
+          updatePercentageMonthlyExpenses(currentMonthlyBalanceAfterCalculations);
+        }
       }
+
       setTotalExpenses((prevAmount) => {
         return `$${(+prevAmount.substring(1).replace(/[^0-9.-]+/g, '') + Number(amount)).toLocaleString('en-US', options)}`;
       });
     } else {
       // Check if the expense's date has the same month and year as the current month and year
-      if (expenseDate.getMonth() + 1 === currentMonth && expenseDate.getFullYear() === currentYear) {
+      if (expenseDate.getMonth() + 1 === selectedMonth.getMonth() + 1 && expenseDate.getFullYear() === selectedMonth.getFullYear()) {
         setCurrentMonthBalance((prevAmount) => {
           const currentMonthlyBalanceAfterCalculations = +prevAmount.substring(1).replace(/[^0-9.-]+/g, '') + Number(amount);
           updatePercentageMonthlyExpenses(currentMonthlyBalanceAfterCalculations);
@@ -337,7 +392,10 @@ export default function MainContainer() {
   function handleMonthOfExpensesSelectChange(event) {
     setSelectedMonthsOfExpensesValue(event.target.value);
 
-    const filteredExpensesArray = getFilteredExpensesByDate(event.target.value);
+    const [month, year] = event.target.value.split('/');
+    // let currentDate = new Date(new Date(parseInt(year), parseInt(month) - 1));
+
+    const filteredExpensesArray = getFilteredExpensesByDate(new Date(parseInt(year), parseInt(month) - 1));
 
     // Calculate the total expenseAmount by summing the expenseAmount property of all objects in the array
     const totalExpenseAmount = filteredExpensesArray.reduce((total, obj) => {
@@ -403,8 +461,8 @@ export default function MainContainer() {
                 <Select variant="filled" value={selectedMonthsOfExpensesValue} onChange={handleMonthOfExpensesSelectChange}>
                   {monthsOfExpenses.map((month, index) => {
                     return (
-                      <option key={index} value={month.date}>
-                        {month.monthFormated}
+                      <option key={index} value={month}>
+                        {month}
                       </option>
                     );
                   })}
@@ -415,10 +473,9 @@ export default function MainContainer() {
             {/* Expenses */}
             {expensesArray.map((expense) => {
               const expenseDate = new Date(expense.date);
-              let currentDate = new Date();
-              if (selectedMonthsOfExpensesValue !== undefined) {
-                currentDate = new Date(selectedMonthsOfExpensesValue);
-              }
+              // Split the string into month and year components
+              const [month, year] = selectedMonthsOfExpensesValue.split('/');
+              let currentDate = new Date(parseInt(year), parseInt(month) - 1);
               const currentMonth = currentDate.getMonth() + 1; // Adding 1 because getMonth() returns zero-based index
               const currentYear = currentDate.getFullYear();
 
