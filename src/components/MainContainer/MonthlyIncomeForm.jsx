@@ -46,7 +46,9 @@ export default function MonthlyIncomeForm({ income, onConfirmIncome, errorMessag
           <AlertIcon />
           {errorMessage}
         </Alert>
-      ) : null}
+      ) : (
+        <></>
+      )}
     </Flex>
   );
 }
