@@ -27,7 +27,7 @@ export default function MainContainerV2() {
   const { isOpen: isOpenCustomModal, onOpen: onOpenCustomModal, onClose: onCloseCustomModal } = useDisclosure();
   const { isOpen: isOpenAddExpenseModal, onOpen: onOpenAddExpenseModal, onClose: onCloseAddExpenseModal } = useDisclosure();
 
-  const marginXMainContainer = useBreakpointValue({ base: '2rem', sm: '2rem', md: '2rem', lg: '4rem', xl: '4 rem', '2xl': '4rem' });
+  const marginXMainContainer = useBreakpointValue({ base: '2rem', sm: '2rem', md: '2rem', lg: '4rem', xl: '4rem', '2xl': '4rem' });
   const statusGridTemplateColumns = useBreakpointValue({
     base: 'repeat(1, 1fr)',
     sm: 'repeat(2, 1fr)',
