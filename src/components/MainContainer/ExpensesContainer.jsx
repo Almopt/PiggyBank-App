@@ -2,7 +2,16 @@ import { Button, Flex, Heading, Select, Tooltip, VStack, StackDivider, TableCont
 import { AddIcon } from '@chakra-ui/icons';
 import Expense from './Expense';
 
-export default function ExpensesContainer({ expensesArray, onAddNewExpense, expensesMonthsAndYearsArray, expenseMothAndYearSelected, monthlyIncome, onChangeMonthAndYearKey }) {
+export default function ExpensesContainer({
+  expensesArray,
+  onAddNewExpense,
+  expensesMonthsAndYearsArray,
+  expenseMothAndYearSelected,
+  monthlyIncome,
+  onChangeMonthAndYearKey,
+  onDeleteExpense,
+  onEditExpense,
+}) {
   return (
     <Flex bg="white" px="1rem" py="1rem" borderRadius="0.6rem" boxShadow="base" flexDirection="column" gap="1.5rem">
       {/* Header */}
@@ -39,7 +48,16 @@ export default function ExpensesContainer({ expensesArray, onAddNewExpense, expe
       </Flex>
       {expensesArray[expenseMothAndYearSelected] &&
         expensesArray[expenseMothAndYearSelected].map((expense, idx) => (
-          <Expense key={idx} id={idx} description={expense.description} category={expense.category} expenseAmount={expense.amount} date={expense.date}></Expense>
+          <Expense
+            key={idx}
+            id={expense.id}
+            description={expense.description}
+            category={expense.category}
+            expenseAmount={expense.amount}
+            date={expense.date}
+            onDeleteExpense={onDeleteExpense}
+            onEditExpense={onEditExpense}
+          ></Expense>
         ))}
     </Flex>
   );

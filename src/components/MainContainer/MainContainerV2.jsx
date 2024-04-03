@@ -9,6 +9,10 @@ import AddNewExpenseModal from './AddNewExpenseModal';
 
 const MODAL_TITLE_EDIT_RESET_MONTHLY_INCOME = 'Edit / Reset Montlhy Income';
 const MODAL_BODY_EDIT_RESET_MONTHLY_INCOME = 'Would you like to reset your monthly income or just add it to the current one?';
+const MODAL_TITLE_DELETE_EXPENSE = 'Delete Expense';
+const MODAL_BODY_DELETE_EXPENSE = 'Are you sure you want to delete this expense?';
+
+let idAcc = 0;
 
 export default function MainContainerV2() {
   const [monthlyIncome, setMonthlyIncome] = useState(0);
@@ -16,6 +20,9 @@ export default function MainContainerV2() {
   const [amountToUpdateMonthlyIncome, setAmountToUpdateMonthlyIncome] = useState(0);
   const [expenses, setExpenses] = useState([]);
   const [selectedMonthYearKey, setSelectedMonthYearKey] = useState('');
+  const [isEditingExpense, setIsEditingExpense] = useState(false);
+  const [expenseToEdit, setExpenseToEdit] = useState({});
+  const [expenseIdToEditOrDelete, setExpenseIdToEditOrDelete] = useState(0);
 
   const { isOpen: isOpenCustomModal, onOpen: onOpenCustomModal, onClose: onCloseCustomModal } = useDisclosure();
   const { isOpen: isOpenAddExpenseModal, onOpen: onOpenAddExpenseModal, onClose: onCloseAddExpenseModal } = useDisclosure();
@@ -31,17 +38,18 @@ export default function MainContainerV2() {
   });
 
   // Modal Variables
-  const modalTitle = modalType === 0 ? MODAL_TITLE_EDIT_RESET_MONTHLY_INCOME : '';
-  const modalBody = modalType === 0 ? MODAL_BODY_EDIT_RESET_MONTHLY_INCOME : '';
+  const modalTitle = modalType === 0 ? MODAL_TITLE_EDIT_RESET_MONTHLY_INCOME : MODAL_TITLE_DELETE_EXPENSE;
+  const modalBody = modalType === 0 ? MODAL_BODY_EDIT_RESET_MONTHLY_INCOME : MODAL_BODY_DELETE_EXPENSE;
   const modalButtons =
     modalType === 0
       ? [
           { label: 'Reset', colorScheme: 'orange', onClick: () => handleResetMonthlyIncome() },
           { label: 'Update', colorScheme: 'orange', onClick: () => handleUpdateMonthlyIncome(amountToUpdateMonthlyIncome) },
         ]
-      : [];
+      : [{ label: 'Delete', colorScheme: 'orange', onClick: () => deleteExpense(expenseIdToEditOrDelete) }];
 
   // Stats Values
+
   const totalSavedBalance = Object.keys(expenses).reduce((acc, monthYearKey) => {
     const sumOfMonth = expenses[monthYearKey].reduce((acc, item) => acc + parseFloat(item.amount), 0);
     const difference = monthlyIncome - sumOfMonth;
@@ -106,7 +114,12 @@ export default function MainContainerV2() {
   };
 
   const handleAddNewExpense = (formData) => {
-    const expenseDate = new Date(formData.date);
+    const expenseId = ++idAcc;
+
+    // Add the id field to formData
+    const expenseWithId = { ...formData, id: expenseId };
+
+    const expenseDate = new Date(expenseWithId.date);
     const monthYearKey = `${expenseDate.getMonth() + 1}/${expenseDate.getFullYear()}`;
 
     // Update dates object with the new object
@@ -114,7 +127,7 @@ export default function MainContainerV2() {
     if (!updatedDates[monthYearKey]) {
       updatedDates[monthYearKey] = [];
     }
-    updatedDates[monthYearKey].push(formData);
+    updatedDates[monthYearKey].push(expenseWithId);
     setExpenses(updatedDates);
     setSelectedMonthYearKey(monthYearKey);
   };
@@ -123,13 +136,57 @@ export default function MainContainerV2() {
     setSelectedMonthYearKey(e.target.value);
   };
 
+  const editExpense = (expenseId) => {
+    onCloseAddExpenseModal();
+  };
+
+  const handleEditExpense = (expenseId) => {
+    // setExpenseIdToEditOrDelete(expenseId);
+    setExpenseToEdit(expenses[selectedMonthYearKey].filter((expense) => expense.id === expenseId)[0]);
+    onOpenAddExpenseModal();
+  };
+
+  const deleteExpense = (expenseId) => {
+    const updatedExpenses = { ...expenses };
+
+    // Check if the selectedMonthYearKey exists in expenses
+    if (updatedExpenses[selectedMonthYearKey]) {
+      // Filter out the expense with the given id
+      updatedExpenses[selectedMonthYearKey] = updatedExpenses[selectedMonthYearKey].filter((expense) => expense.id !== expenseId);
+    }
+
+    // Update the state with the modified expenses
+    setExpenses(updatedExpenses);
+    // Reset ExpenseId
+    setExpenseIdToEditOrDelete(0);
+    onCloseCustomModal();
+  };
+
+  const handleDeleteExpense = (expenseId) => {
+    setExpenseIdToEditOrDelete(expenseId);
+    setModalType(1);
+    onOpenCustomModal();
+  };
+
+  const customCloseExpenseModal = () => {
+    // setExpenseToEdit({});
+    onCloseAddExpenseModal();
+  };
+
   return (
     // Wrapper
     <Flex bg="#f1f3f4" flex="6" overflowY="auto">
       {/* Main Container */}
       <Flex mt="2.5rem" mx={marginXMainContainer} flexDirection="column" width="100%" gap="2.5rem">
         <CustomModal isOpen={isOpenCustomModal} onClose={onCloseCustomModal} title={modalTitle} bodyContent={modalBody} buttons={modalButtons} />
-        <AddNewExpenseModal isOpen={isOpenAddExpenseModal} onClose={onCloseAddExpenseModal} onHandleAddNewExpense={handleAddNewExpense} monthlyIncome={monthlyIncome} />
+        <AddNewExpenseModal
+          isOpen={isOpenAddExpenseModal}
+          onClose={customCloseExpenseModal}
+          onHandleAddNewExpense={handleAddNewExpense}
+          monthlyIncome={monthlyIncome}
+          // isEditing={isEditingExpense}
+          expenseToEdit={expenseToEdit}
+        />
         <MonthlyIncomeContainerV2 monthlyIncomeValue={monthlyIncome} onChangeMonthlyIncome={handleChangeMonthlyIncome} />
         {/* Stats */}
         <Grid templateColumns={statusGridTemplateColumns} gap={6}>
@@ -156,6 +213,8 @@ export default function MainContainerV2() {
           expenseMothAndYearSelected={selectedMonthYearKey}
           monthlyIncome={monthlyIncome}
           onChangeMonthAndYearKey={handleMonthYearKeyChange}
+          onDeleteExpense={handleDeleteExpense}
+          onEditExpense={handleEditExpense}
         />
       </Flex>
     </Flex>

@@ -17,16 +17,22 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon } from '@chakra-ui/icons';
 import { useState } from 'react';
 
-export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpense, monthlyIncome }) {
-  const [formData, setFormData] = useState({
-    amount: '',
-    description: '',
-    category: '',
-    date: '',
-  });
+export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpense, monthlyIncome, expenseToEdit }) {
+  console.log('expense to Edit:', expenseToEdit);
+  const [formData, setFormData] = useState(
+    expenseToEdit || {
+      amount: '',
+      description: '',
+      category: '',
+      date: '',
+    }
+  );
+
+  console.log(formData);
+
   const [addExpenseError, setAddExpenseError] = useState(false);
 
   const handleInputChange = (e) => {
@@ -69,7 +75,8 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Add New Expense</ModalHeader>
+        {/* <ModalHeader>Add New Expense</ModalHeader> */}
+        <ModalHeader>{Object.keys(expenseToEdit).length === 0 ? 'Add New Expense' : 'Edit Expense'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <form onSubmit={handleSubmit}>
@@ -114,7 +121,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
               <Button
                 mt="2rem"
                 mb="1rem"
-                leftIcon={<AddIcon />}
+                leftIcon={Object.keys(expenseToEdit).length === 0 ? <AddIcon /> : <EditIcon />}
                 bg="primaryRed"
                 variant="solid"
                 alignSelf="center"
@@ -125,7 +132,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
                 _active={{ background: 'blackAlpha.800' }}
                 type="submit"
               >
-                Add Expense
+                {Object.keys(expenseToEdit).length === 0 ? 'Add Expense' : 'Edit Expense'}
               </Button>
               {addExpenseError && (
                 <Alert status="error" mb="1.5rem">
@@ -133,13 +140,6 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
                   The amount entered is greater than the current balance available!
                 </Alert>
               )}
-              {/* {invalidExpense && (
-                <Alert status="error">
-                  <AlertIcon />
-                  <AlertTitle>Expense Invalid!</AlertTitle>
-                  <AlertDescription>Not enough funds for this expense</AlertDescription>
-                </Alert>
-              )} */}
             </Flex>
           </form>
         </ModalBody>

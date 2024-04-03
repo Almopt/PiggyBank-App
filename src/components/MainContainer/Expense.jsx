@@ -3,7 +3,7 @@ import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 
 import { TbPigMoney } from 'react-icons/tb';
 
-export default function Expense({ id, description, category, date, expenseAmount, handleButtons }) {
+export default function Expense({ id, description, category, date, expenseAmount, onDeleteExpense, onEditExpense }) {
   // Convert the string to a Date object
   const dateObject = new Date(date);
   // Format date into DD/MM/YYYY
@@ -45,10 +45,10 @@ export default function Expense({ id, description, category, date, expenseAmount
           </Text>
           <Flex gap="0.5rem">
             <Tooltip label="Edit Expense" fontSize="md">
-              <EditIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => handleButtons[0](id)} />
+              <EditIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => onEditExpense(id)} />
             </Tooltip>
             <Tooltip label="Delete Expense" fontSize="md">
-              <DeleteIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => handleButtons[1](id)} />
+              <DeleteIcon boxSize={5} cursor="pointer" _hover={{ color: 'primaryRed' }} onClick={() => onDeleteExpense(id)} />
             </Tooltip>
           </Flex>
         </Flex>
