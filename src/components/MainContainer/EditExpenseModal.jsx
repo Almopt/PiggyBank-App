@@ -20,22 +20,13 @@ import {
 import { AddIcon, EditIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
 
-export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpense, monthlyIncome, expenseToEdit }) {
-  console.log('expense to Edit:', expenseToEdit);
+export default function EditExpenseModal({ isOpen, onClose, onComplete, monthlyIncome, expenseToEdit }) {
+  if (expenseToEdit == null) {
+    throw new Error('There is no expense')
+  }
   const [formData, setFormData] = useState(
-    expenseToEdit || {
-      amount: '',
-      description: '',
-      category: '',
-      date: '',
-    }
+    expenseToEdit
   );
-  // useEffect(() => {
-  //   if (expenseToEdit) {
-  //     setFormData(expenseToEdit);
-  //   }
-  // }, [expenseToEdit]);
-
   console.log(formData);
 
   const [addExpenseError, setAddExpenseError] = useState(false);
@@ -70,7 +61,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
       setAddExpenseError((prevValue) => !prevValue);
     }
 
-    onHandleAddNewExpense(formData);
+    onComplete(formData);
     resetFormData();
     // Close the modal after form submission
     onClose();
@@ -80,8 +71,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
       <ModalOverlay />
       <ModalContent>
-        {/* <ModalHeader>Add New Expense</ModalHeader> */}
-        <ModalHeader>{expenseToEdit ? 'Edit Expense' : 'Add New Expense'}</ModalHeader>
+        <ModalHeader>Edit Expense</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <form onSubmit={handleSubmit}>
@@ -126,7 +116,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
               <Button
                 mt="2rem"
                 mb="1rem"
-                leftIcon={expenseToEdit ? <EditIcon /> : <AddIcon />}
+                leftIcon={<EditIcon />}
                 bg="primaryRed"
                 variant="solid"
                 alignSelf="center"
@@ -137,7 +127,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
                 _active={{ background: 'blackAlpha.800' }}
                 type="submit"
               >
-                {expenseToEdit ? 'Edit Expense' : 'Add Expense'}
+                Edit Expense
               </Button>
               {addExpenseError && (
                 <Alert status="error" mb="1.5rem">

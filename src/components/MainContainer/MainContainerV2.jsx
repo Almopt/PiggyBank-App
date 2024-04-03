@@ -6,6 +6,7 @@ import CustomModal from './CustomModal';
 import Stats from './Stats';
 import ExpensesContainer from './ExpensesContainer';
 import AddNewExpenseModal from './AddNewExpenseModal';
+import EditExpenseModal from './EditExpenseModal';
 
 const MODAL_TITLE_EDIT_RESET_MONTHLY_INCOME = 'Edit / Reset Montlhy Income';
 const MODAL_BODY_EDIT_RESET_MONTHLY_INCOME = 'Would you like to reset your monthly income or just add it to the current one?';
@@ -19,15 +20,28 @@ export default function MainContainerV2() {
   const [modalType, setModalType] = useState(0);
   const [amountToUpdateMonthlyIncome, setAmountToUpdateMonthlyIncome] = useState(0);
   const [expenses, setExpenses] = useState([]);
-  const [selectedMonthYearKey, setSelectedMonthYearKey] = useState('');
+  console.log('expenses:', expenses);
+  const [selectedMonthYear, setSelectedMonthYear] = useState();
   const [isEditingExpense, setIsEditingExpense] = useState(false);
-  const [expenseToEdit, setExpenseToEdit] = useState({});
+  const [expenseToEdit, setExpenseToEdit] = useState(); // useState(undefined) [It is the same]
   const [expenseIdToEditOrDelete, setExpenseIdToEditOrDelete] = useState(0);
+
+
+  // If the expenses were a single flat array, you could filter them like this
+  // const monthlyExpenses = expenses.filter(expense => {
+  //   const date = new Date(expense.date);
+  //   const month = date.getMonth() + 1;
+  //   const year = date.getFullYear();
+  //   const selectedMonth = selectedMonthYear.getMonth() + 1;
+  //   const selectedYear = selectedMonthYear.getFullYear();
+  //   return month === selectedMonth && year === selectedYear;
+  // })
 
   const { isOpen: isOpenCustomModal, onOpen: onOpenCustomModal, onClose: onCloseCustomModal } = useDisclosure();
   const { isOpen: isOpenAddExpenseModal, onOpen: onOpenAddExpenseModal, onClose: onCloseAddExpenseModal } = useDisclosure();
+  const { isOpen: isOpenEditExpenseModal, onOpen: onOpenEditExpenseModal, onClose: onCloseEditExpenseModal } = useDisclosure();
 
-  const marginXMainContainer = useBreakpointValue({ base: '2rem', sm: '2rem', md: '2rem', lg: '4rem', xl: '4 rem', '2xl': '4rem' });
+  const marginXMainContainer = useBreakpointValue({ base: '2rem', sm: '2rem', md: '2rem', lg: '4rem', xl: '4rem', '2xl': '4rem' });
   const statusGridTemplateColumns = useBreakpointValue({
     base: 'repeat(1, 1fr)',
     sm: 'repeat(2, 1fr)',
@@ -57,29 +71,33 @@ export default function MainContainerV2() {
   }, 0);
 
   const totalExpensesAmount = Object.values(expenses).reduce((acc, month) => {
+    // Rewrite this with a nested reduce, like for totalSavedBalance
     month.forEach((item) => {
       acc += parseFloat(item.amount);
     });
     return +acc.toFixed(1);
   }, 0);
 
-  const currentMonthlyBalance = () => {
-    let sum = 0;
-    for (const key in expenses) {
-      if (key === selectedMonthYearKey) {
-        expenses[key].forEach((item) => {
-          sum += parseFloat(item.amount);
-        });
-      }
-    }
-    return monthlyIncome - sum;
-  };
+  const selectedMonthYearKey = selectedMonthYear ? `${selectedMonthYear.getMonth() + 1}/${selectedMonthYear.getFullYear()}` : '';
 
   const currentMonthlyExpenses = selectedMonthYearKey ? expenses[selectedMonthYearKey].reduce((acc, item) => acc + parseFloat(item.amount), 0) : 0;
+  const selectedMonthBalance = monthlyIncome - currentMonthlyExpenses;
+  // const currentMonthlyBalance = () => {
+  //   let sum = 0;
+  //   for (const key in expenses) {
+  //     if (key === selectedMonthYearKey) {
+  //       expenses[key].forEach((item) => {
+  //         sum += parseFloat(item.amount);
+  //       });
+  //     }
+  //   }
+  //   return monthlyIncome - sum;
+  // };
 
-  const currentPercentageMonthlyExpenses = selectedMonthYearKey
-    ? ((expenses[selectedMonthYearKey].reduce((acc, item) => acc + parseFloat(item.amount), 0) / monthlyIncome) * 100).toFixed(1)
-    : 0;
+
+  const currentMonthlyExpenseRatio = currentMonthlyExpenses / monthlyIncome
+  const currentMonthlyExpensePercentage = currentMonthlyExpenseRatio * 100
+  const currentMonthlyExpensePercentageLabel = currentMonthlyExpensePercentage.toFixed(1)
 
   const expenseMonths = Object.keys(expenses);
 
@@ -114,6 +132,7 @@ export default function MainContainerV2() {
   };
 
   const handleAddNewExpense = (formData) => {
+    // Use a state variable, maybe use expenses.length + 1?
     const expenseId = ++idAcc;
 
     // Add the id field to formData
@@ -129,21 +148,32 @@ export default function MainContainerV2() {
     }
     updatedDates[monthYearKey].push(expenseWithId);
     setExpenses(updatedDates);
-    setSelectedMonthYearKey(monthYearKey);
+    setSelectedMonthYear(expenseDate);
   };
 
   const handleMonthYearKeyChange = (e) => {
-    setSelectedMonthYearKey(e.target.value);
+    const parts = e.target.value.split('/');
+    const month = parts[0];
+    const year = parts[1];
+    const date = new Date(year, month - 1, 1);
+    setSelectedMonthYear(date);
   };
 
-  const editExpense = (expenseId) => {
+  const editExpense = (expenseId, formData) => {
+    const newExpenses = expenses.map((expense) => {
+      if (expense.id === expenseId) {
+        return { ...expense, ...formData };
+      }
+      return expense;
+    });
+    setExpenses(newExpenses);
     onCloseAddExpenseModal();
   };
 
   const handleEditExpense = (expenseId) => {
     // setExpenseIdToEditOrDelete(expenseId);
     setExpenseToEdit(expenses[selectedMonthYearKey].filter((expense) => expense.id === expenseId)[0]);
-    onOpenAddExpenseModal();
+    onOpenEditExpenseModal()
   };
 
   const deleteExpense = (expenseId) => {
@@ -173,6 +203,15 @@ export default function MainContainerV2() {
     onCloseAddExpenseModal();
   };
 
+
+  const editExpenseModal = expenseToEdit && (
+    <EditExpenseModal
+      isOpen={isOpenEditExpenseModal}
+      onClose={onCloseEditExpenseModal}
+      onComplete={editExpense}
+    />
+  )
+
   return (
     // Wrapper
     <Flex bg="#f1f3f4" flex="6" overflowY="auto">
@@ -197,13 +236,13 @@ export default function MainContainerV2() {
             <Stats title={'Total Expenses Amount'} amount={`$${totalExpensesAmount}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
-            <Stats title={'Current Month Balance'} amount={`$${currentMonthlyBalance()}`} percentage={'0%'} />
+            <Stats title={'Current Month Balance'} amount={`$${selectedMonthBalance}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
             <Stats title={'Current Month Expenses'} amount={`$${currentMonthlyExpenses}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
-            <Stats title={'(%) Monthly Expenses'} amount={`${currentPercentageMonthlyExpenses}%`} percentage={'0%'} />
+            <Stats title={'(%) Monthly Expenses'} amount={`${currentMonthlyExpensePercentageLabel}%`} percentage={'0%'} />
           </GridItem>
         </Grid>
         <ExpensesContainer
