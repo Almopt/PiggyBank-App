@@ -17,26 +17,16 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { AddIcon, EditIcon } from '@chakra-ui/icons';
-import { useEffect, useState } from 'react';
+import { AddIcon } from '@chakra-ui/icons';
+import { useState } from 'react';
 
-export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpense, monthlyIncome, expenseToEdit }) {
-  console.log('expense to Edit:', expenseToEdit);
-  const [formData, setFormData] = useState(
-    expenseToEdit || {
-      amount: '',
-      description: '',
-      category: '',
-      date: '',
-    }
-  );
-  // useEffect(() => {
-  //   if (expenseToEdit) {
-  //     setFormData(expenseToEdit);
-  //   }
-  // }, [expenseToEdit]);
-
-  console.log(formData);
+export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpense, monthlyIncome }) {
+  const [formData, setFormData] = useState({
+    amount: '',
+    description: '',
+    category: '',
+    date: '',
+  });
 
   const [addExpenseError, setAddExpenseError] = useState(false);
 
@@ -81,7 +71,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
       <ModalOverlay />
       <ModalContent>
         {/* <ModalHeader>Add New Expense</ModalHeader> */}
-        <ModalHeader>{expenseToEdit ? 'Edit Expense' : 'Add New Expense'}</ModalHeader>
+        <ModalHeader>{'Add New Expense'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <form onSubmit={handleSubmit}>
@@ -126,7 +116,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
               <Button
                 mt="2rem"
                 mb="1rem"
-                leftIcon={expenseToEdit ? <EditIcon /> : <AddIcon />}
+                leftIcon={<AddIcon />}
                 bg="primaryRed"
                 variant="solid"
                 alignSelf="center"
@@ -137,7 +127,7 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
                 _active={{ background: 'blackAlpha.800' }}
                 type="submit"
               >
-                {expenseToEdit ? 'Edit Expense' : 'Add Expense'}
+                {'Add Expense'}
               </Button>
               {addExpenseError && (
                 <Alert status="error" mb="1.5rem">

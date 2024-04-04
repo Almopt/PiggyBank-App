@@ -1,4 +1,4 @@
-import { Button, Flex, Heading, Select, Tooltip, VStack, StackDivider, TableContainer, Table, Thead, Tr, Th, Tbody, Td, Tfoot } from '@chakra-ui/react';
+import { Button, Flex, Heading, Select, Tooltip } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import Expense from './Expense';
 
@@ -12,6 +12,35 @@ export default function ExpensesContainer({
   onDeleteExpense,
   onEditExpense,
 }) {
+  const formatDateToMMYYYY = (date) => {
+    if (date) {
+      // Get month and year from the date
+      const month = date.getMonth() + 1; // Adding 1 because getMonth() returns zero-based index
+      const year = date.getFullYear();
+
+      // Pad month with leading zero if necessary
+      const paddedMonth = month < 10 ? `0${month}` : month;
+
+      // Return formatted string MM/YYYY
+      return `${paddedMonth}/${year}`;
+    }
+  };
+
+  const filterExpensesBySelectedMonthAndYear = (date) => {
+    if (date) {
+      const targetMonth = date.getMonth() + 1;
+      const targetYear = date.getFullYear();
+
+      return expensesArray.filter((obj) => {
+        return obj.date.getMonth() + 1 === targetMonth && obj.date.getFullYear() === targetYear;
+      });
+    }
+  };
+
+  const currentMonthAndYear = formatDateToMMYYYY(expenseMothAndYearSelected);
+
+  const expensesFiltered = filterExpensesBySelectedMonthAndYear(expenseMothAndYearSelected);
+
   return (
     <Flex bg="white" px="1rem" py="1rem" borderRadius="0.6rem" boxShadow="base" flexDirection="column" gap="1.5rem">
       {/* Header */}
@@ -20,10 +49,10 @@ export default function ExpensesContainer({
         {/* Expenses Months and Add New Expense Button */}
         <Flex gap="1rem">
           {expensesMonthsAndYearsArray.length > 0 && (
-            <Select placeholder="Select option" alignSelf="center" value={expenseMothAndYearSelected} onChange={onChangeMonthAndYearKey}>
-              {expensesMonthsAndYearsArray.map((monthYearKey, index) => (
-                <option key={index} value={monthYearKey}>
-                  {monthYearKey}
+            <Select alignSelf="center" value={currentMonthAndYear} onChange={onChangeMonthAndYearKey}>
+              {expensesMonthsAndYearsArray.map((monthYear, index) => (
+                <option key={index} value={formatDateToMMYYYY(monthYear)}>
+                  {formatDateToMMYYYY(monthYear)}
                 </option>
               ))}
             </Select>
@@ -46,8 +75,8 @@ export default function ExpensesContainer({
           </Tooltip>
         </Flex>
       </Flex>
-      {expensesArray[expenseMothAndYearSelected] &&
-        expensesArray[expenseMothAndYearSelected].map((expense, idx) => (
+      {expensesFiltered &&
+        expensesFiltered.map((expense, idx) => (
           <Expense
             key={idx}
             id={expense.id}

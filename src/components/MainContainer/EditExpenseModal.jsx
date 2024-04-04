@@ -17,17 +17,18 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { AddIcon, EditIcon } from '@chakra-ui/icons';
-import { useEffect, useState } from 'react';
+import { EditIcon } from '@chakra-ui/icons';
+import { useState } from 'react';
 
-export default function EditExpenseModal({ isOpen, onClose, onComplete, monthlyIncome, expenseToEdit }) {
-  if (expenseToEdit == null) {
-    throw new Error('There is no expense')
-  }
-  const [formData, setFormData] = useState(
-    expenseToEdit
-  );
-  console.log(formData);
+export default function EditExpenseModal({ isOpen, onClose, onHandleEditExpense, monthlyIncome, expenseToEdit }) {
+  // if (expenseToEdit == null) {
+  //   throw new Error('There is no expense');
+  // }
+
+  // console.log(expenseToEdit);
+  const [formData, setFormData] = useState(expenseToEdit);
+
+  // console.log(formData);
 
   const [addExpenseError, setAddExpenseError] = useState(false);
 
@@ -61,7 +62,7 @@ export default function EditExpenseModal({ isOpen, onClose, onComplete, monthlyI
       setAddExpenseError((prevValue) => !prevValue);
     }
 
-    onComplete(formData);
+    onHandleEditExpense(formData);
     resetFormData();
     // Close the modal after form submission
     onClose();
