@@ -47,8 +47,16 @@ export default function MainContainerV2() {
         ]
       : [{ label: 'Delete', colorScheme: 'orange', onClick: () => deleteExpense(expenseIdToEditOrDelete) }];
 
-  // Calculations for Stats Values
+  // Get the months and year of existence expenses (MM/YYYY)
+  const expenseMonths = [
+    ...new Set(
+      expenses.map((expense) => {
+        return `${expense.date.getMonth() + 1}/${expense.date.getFullYear()}`;
+      })
+    ),
+  ];
 
+  // Calculations for Stats Values
   const currentMonthExpensesArray = expenses.filter((expense) => {
     const selectedMonth = selectedMonthYear.getMonth();
     const selectedYear = selectedMonthYear.getFullYear();
@@ -59,10 +67,17 @@ export default function MainContainerV2() {
     const monthlySavings = {};
 
     expenses.forEach((expense) => {
+      // Get month and year
       const monthYear = `${expense.date.getMonth() + 1}-${expense.date.getFullYear()}`;
-      const currentMonthSpending = (monthlySavings[monthYear] || 0) + expense.amount;
-      // const savings = Math.max(0, monthlyIncome - currentMonthSpending);
-      const savings = monthlyIncome - currentMonthSpending;
+
+      let savings = 0;
+
+      if (monthlySavings[monthYear]) {
+        savings = monthlySavings[monthYear] - expense.amount;
+      } else {
+        savings = monthlyIncome - expense.amount;
+      }
+
       monthlySavings[monthYear] = savings;
     });
 
@@ -82,8 +97,6 @@ export default function MainContainerV2() {
   const currentMonthBalance = monthlyIncome > 0 ? monthlyIncome - currentMonthExpenses : 0;
   const currentMonthExpensesPercentage = monthlyIncome > 0 ? (currentMonthBalance * 100) / monthlyIncome : 0;
   const currentMonthlyExpensePercentageLabel = monthlyIncome > 0 ? 100 - currentMonthExpensesPercentage : 0;
-
-  const expenseMonths = [...new Set(expenses.map((expense) => expense.date))];
 
   // Handle Monthly Income Changes
   const handleChangeMonthlyIncome = (monthlyIncomeValue) => {
@@ -173,10 +186,19 @@ export default function MainContainerV2() {
     onOpenCustomModal();
   };
 
-  const currentExpenseToEdit =
-    expenses.length > 0 ? expenses.filter((expense) => expense.id === expenseIdToEditOrDelete)[0] : { amount: '', description: '', category: '', date: '' };
+  const currentExpenseToEdit = expenses.length > 0 ? expenses.filter((expense) => expense.id === expenseIdToEditOrDelete)[0] : undefined;
 
   // const editExpenseModal = expenseToEdit && <EditExpenseModal isOpen={isOpenEditExpenseModal} onClose={onCloseEditExpenseModal} onComplete={editExpense} />;
+
+  const editExpenseModal = currentExpenseToEdit && (
+    <EditExpenseModal
+      isOpen={isOpenEditExpenseModal}
+      onClose={onCloseEditExpenseModal}
+      onHandleEditExpense={editExpense}
+      monthlyIncome={monthlyIncome}
+      expenseToEdit={currentExpenseToEdit}
+    />
+  );
 
   return (
     // Wrapper
@@ -185,13 +207,14 @@ export default function MainContainerV2() {
       <Flex mt="2.5rem" mx={marginXMainContainer} flexDirection="column" width="100%" gap="2.5rem">
         <CustomModal isOpen={isOpenCustomModal} onClose={onCloseCustomModal} title={modalTitle} bodyContent={modalBody} buttons={modalButtons} />
         <AddNewExpenseModal isOpen={isOpenAddExpenseModal} onClose={onCloseAddExpenseModal} onHandleAddNewExpense={handleAddNewExpense} monthlyIncome={monthlyIncome} />
-        <EditExpenseModal
+        {/* <EditExpenseModal
           isOpen={isOpenEditExpenseModal}
           onClose={onCloseEditExpenseModal}
-          onHandleEditExpense={handleEditExpense}
+          onHandleEditExpense={editExpense}
           monthlyIncome={monthlyIncome}
           expenseToEdit={currentExpenseToEdit}
-        />
+        /> */}
+        {editExpenseModal}
         <MonthlyIncomeContainerV2 monthlyIncomeValue={monthlyIncome} onChangeMonthlyIncome={handleChangeMonthlyIncome} />
         {/* Stats */}
         <Grid templateColumns={statusGridTemplateColumns} gap={6}>

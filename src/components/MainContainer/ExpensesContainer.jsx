@@ -19,10 +19,10 @@ export default function ExpensesContainer({
       const year = date.getFullYear();
 
       // Pad month with leading zero if necessary
-      const paddedMonth = month < 10 ? `0${month}` : month;
+      //const paddedMonth = month < 10 ? `0${month}` : month;
 
       // Return formatted string MM/YYYY
-      return `${paddedMonth}/${year}`;
+      return `${month}/${year}`;
     }
   };
 
@@ -51,8 +51,8 @@ export default function ExpensesContainer({
           {expensesMonthsAndYearsArray.length > 0 && (
             <Select alignSelf="center" value={currentMonthAndYear} onChange={onChangeMonthAndYearKey}>
               {expensesMonthsAndYearsArray.map((monthYear, index) => (
-                <option key={index} value={formatDateToMMYYYY(monthYear)}>
-                  {formatDateToMMYYYY(monthYear)}
+                <option key={index} value={monthYear}>
+                  {monthYear}
                 </option>
               ))}
             </Select>
