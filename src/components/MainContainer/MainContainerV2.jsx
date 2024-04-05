@@ -154,15 +154,19 @@ export default function MainContainerV2() {
     setSelectedMonthYear(date);
   };
 
-  const editExpense = (expenseId, formData) => {
-    // const newExpenses = expenses.map((expense) => {
-    //   if (expense.id === expenseId) {
-    //     return { ...expense, ...formData };
-    //   }
-    //   return expense;
-    // });
-    // setExpenses(newExpenses);
-    // onCloseAddExpenseModal();
+  const editExpense = (formData) => {
+    const newExpenses = expenses.map((expense) => {
+      if (expense.id === expenseIdToEditOrDelete) {
+        // Convert string date to Date Object
+        const expenseDate = new Date(formData.date);
+        return { id: expense.id, date: expenseDate, amount: +formData.amount, description: formData.description, category: formData.category };
+      }
+      return expense;
+    });
+
+    setExpenses(newExpenses);
+    setExpenseIdToEditOrDelete(undefined);
+    onCloseAddExpenseModal();
   };
 
   const handleEditExpense = (expenseId) => {
@@ -188,8 +192,6 @@ export default function MainContainerV2() {
 
   const currentExpenseToEdit = expenses.length > 0 ? expenses.filter((expense) => expense.id === expenseIdToEditOrDelete)[0] : undefined;
 
-  // const editExpenseModal = expenseToEdit && <EditExpenseModal isOpen={isOpenEditExpenseModal} onClose={onCloseEditExpenseModal} onComplete={editExpense} />;
-
   const editExpenseModal = currentExpenseToEdit && (
     <EditExpenseModal
       isOpen={isOpenEditExpenseModal}
@@ -207,28 +209,21 @@ export default function MainContainerV2() {
       <Flex mt="2.5rem" mx={marginXMainContainer} flexDirection="column" width="100%" gap="2.5rem">
         <CustomModal isOpen={isOpenCustomModal} onClose={onCloseCustomModal} title={modalTitle} bodyContent={modalBody} buttons={modalButtons} />
         <AddNewExpenseModal isOpen={isOpenAddExpenseModal} onClose={onCloseAddExpenseModal} onHandleAddNewExpense={handleAddNewExpense} monthlyIncome={monthlyIncome} />
-        {/* <EditExpenseModal
-          isOpen={isOpenEditExpenseModal}
-          onClose={onCloseEditExpenseModal}
-          onHandleEditExpense={editExpense}
-          monthlyIncome={monthlyIncome}
-          expenseToEdit={currentExpenseToEdit}
-        /> */}
         {editExpenseModal}
         <MonthlyIncomeContainerV2 monthlyIncomeValue={monthlyIncome} onChangeMonthlyIncome={handleChangeMonthlyIncome} />
         {/* Stats */}
         <Grid templateColumns={statusGridTemplateColumns} gap={6}>
           <GridItem>
-            <Stats title={'Total Saved Balance'} amount={`$${totalSavedBalance}`} percentage={'0%'} />
+            <Stats title={'Total Saved Balance'} amount={`$${totalSavedBalance.toFixed(1)}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
-            <Stats title={'Total Expenses Amount'} amount={`$${totalExpensesAmount}`} percentage={'0%'} />
+            <Stats title={'Total Expenses Amount'} amount={`$${totalExpensesAmount.toFixed(1)}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
-            <Stats title={'Current Month Balance'} amount={`$${currentMonthBalance}`} percentage={'0%'} />
+            <Stats title={'Current Month Balance'} amount={`$${currentMonthBalance.toFixed(1)}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
-            <Stats title={'Current Month Expenses'} amount={`$${currentMonthExpenses}`} percentage={'0%'} />
+            <Stats title={'Current Month Expenses'} amount={`$${currentMonthExpenses.toFixed(1)}`} percentage={'0%'} />
           </GridItem>
           <GridItem>
             <Stats title={'(%) Monthly Expenses'} amount={`${currentMonthlyExpensePercentageLabel.toFixed(1)}%`} percentage={'0%'} />

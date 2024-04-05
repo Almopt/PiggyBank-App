@@ -66,8 +66,13 @@ export default function AddNewExpenseModal({ isOpen, onClose, onHandleAddNewExpe
     onClose();
   };
 
+  const customCloseModal = () => {
+    resetFormData();
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
+    <Modal isOpen={isOpen} onClose={customCloseModal} isCentered size="lg">
       <ModalOverlay />
       <ModalContent>
         {/* <ModalHeader>Add New Expense</ModalHeader> */}

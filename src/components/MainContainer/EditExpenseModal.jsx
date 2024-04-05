@@ -25,10 +25,7 @@ export default function EditExpenseModal({ isOpen, onClose, onHandleEditExpense,
   //   throw new Error('There is no expense');
   // }
 
-  // console.log(expenseToEdit);
   const [formData, setFormData] = useState(expenseToEdit);
-
-  // console.log(formData);
 
   const [addExpenseError, setAddExpenseError] = useState(false);
 
@@ -68,8 +65,24 @@ export default function EditExpenseModal({ isOpen, onClose, onHandleEditExpense,
     onClose();
   };
 
+  const customCloseModal = () => {
+    resetFormData();
+    onClose();
+  };
+
+  const convertDateIntoString = (date) => {
+    // Extract year, month, and day from the Date object
+    let year = date.getFullYear();
+    // Months are zero-based, so we add 1 to get the correct month
+    let month = String(date.getMonth() + 1).padStart(2, '0');
+    let day = String(date.getDate()).padStart(2, '0');
+
+    // Construct the desired string format 'yyyy-mm-dd'
+    return `${year}-${month}-${day}`;
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
+    <Modal isOpen={isOpen} onClose={customCloseModal} isCentered size="lg">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Edit Expense</ModalHeader>
@@ -111,7 +124,13 @@ export default function EditExpenseModal({ isOpen, onClose, onHandleEditExpense,
                 <FormControl isRequired>
                   <FormLabel>Date</FormLabel>
                   {/* <Input variant="filled" type="date" value={`${year}-${month}-${day}`} /> */}
-                  <Input name="date" variant="filled" type="date" value={formData.date} onChange={handleInputChange} />
+                  <Input
+                    name="date"
+                    variant="filled"
+                    type="date"
+                    value={formData.date instanceof Date ? convertDateIntoString(formData.date) : formData.date}
+                    onChange={handleInputChange}
+                  />
                 </FormControl>
               </Box>
               <Button
